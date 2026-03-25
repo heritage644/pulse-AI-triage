@@ -39,14 +39,15 @@ const SymptomTagInput = ({ symptoms, onChange, error }: SymptomTagInputProps) =>
         Symptoms
       </label>
       <div
-        className={`flex flex-wrap gap-2 p-3 rounded-lg border bg-card min-h-[48px] focus-within:ring-2 focus-within:ring-ring ${
+        className={`flex flex-wrap gap-2 p-3 rounded-lg border bg-card min-h-[48px] 
+          focus-within:ring-2 focus-within:ring-ring ${
           error ? "border-destructive" : "border-input"
         }`}
       >
         {symptoms.map((s) => (
           <span
             key={s}
-            className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium"
+            className="inline-flex items-center gap-1 px-6 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium"
           >
             {s}
             <button

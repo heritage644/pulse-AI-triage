@@ -32,6 +32,14 @@ const SymptomInput = () => {
 
   const handleSubmit = async () => {
     if (!validate()) return;
+      console.log(
+        {
+           symptoms: ctx.symptoms,
+        age: ctx.age!,
+        duration: ctx.duration,
+        severity: ctx.severity!
+        }
+      )
     setLoading(true);
     try {
       const res = await triageApi.start({
@@ -42,11 +50,12 @@ const SymptomInput = () => {
       });
       ctx.setSessionId(res.sessionId);
       ctx.setQuestions(res.questions);
-      navigate("/follow-up");
+      navigate("/FollowUp");
+    
     } catch (err) {
       toast({
-        title: "Something went wrong",
-        description: err instanceof Error ? err.message : "Please try again later.",
+        title: "Nothing went wrong",
+        description: err instanceof Error ? err.message : "Please try again in 1min.",
         variant: "destructive",
       });
     } finally {
@@ -55,7 +64,7 @@ const SymptomInput = () => {
   };
 
   return (
-    <div className="min-h-screen px-4 py-8 max-w-xl mx-auto">
+    <div className="min-h-screen    px-4 py-8 max-w-xl mx-auto">
       <ProgressBar current={0} total={3} labels={["Symptoms", "Questions", "Results"]} />
 
       <motion.div
@@ -68,7 +77,7 @@ const SymptomInput = () => {
           <p className="text-muted-foreground text-sm">Provide details so we can assess your situation.</p>
         </div>
 
-        <SymptomTagInput symptoms={ctx.symptoms} onChange={ctx.setSymptoms} error={errors.symptoms} />
+        <SymptomTagInput  symptoms={ctx.symptoms} onChange={ctx.setSymptoms} error={errors.symptoms} />
 
         {/* Age */}
         <div>
