@@ -1,213 +1,200 @@
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
-import { Activity, Shield, Clock , Mail, Phone, MapPin, Twitter, Linkedin, Github } from "lucide-react";
-
-
-const features = [
-  { icon: Activity, title: "Smart Analysis", description: "AI-powered symptom evaluation for quick guidance" },
-  { icon: Clock, title: "In Minutes", description: "Get results in just a few minutes, not hours" },
-  { icon: Shield, title: "Private & Secure", description: "Your health data stays confidential" },
-];
-
+import { Shield, Clock, ChevronRight, Star } from "lucide-react";
+import Navbar from "@/components/navbar";
+import DisclaimerCard from "@/components/disclaimerCard";
+import HowItWorks from "@/components/howitworks";
+import AssessmentCTA from "@/components/assesment";
+import Benefits from "@/components/benefits";
+import Footer from "@/components/footer";
 const Landing = () => {
-  const navigate = useNavigate();
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+
+    if (element) {
+      element.scrollIntoView({
+        behavior: "smooth",
+      });
+    }
+  };
 
   return (
-    <div className="min-h-screen body flex flex-col relative overflow-hidden">
-
-      {/* 🎥 VIDEO BACKGROUND */}
-      <div className="absolute inset-0 z-0">
+    <>
+    
+    <div className="relative min-h-screen overflow-hidden">
+      <Navbar/>
+      {/* Video Background */}
+      <div className="absolute inset-0 -z-10">
         <video
           autoPlay
           loop
           muted
           playsInline
-          className="w-full h-full object-cover"
+          className="h-full w-full object-cover"
         >
-          <source src="public/doc_2026-03-24_20-35-21.mp4" type="video/mp4" />
+          <source
+            src="/doc_2026-03-24_20-35-21.mp4"
+            type="video/mp4"
+          />
         </video>
 
-        {/* Overlay (important for readability) */}
-        <div className="absolute inset-0 bg-black/60"></div>
-
-        {/* Optional blue tint for healthcare vibe */}
-        <div className="absolute inset-0 bg-blue-900/20"></div>
+        {/* Dark Overlay */}
+        <div className="absolute inset-0 bg-black/60" />
+        
       </div>
 
-      <div id="bg-blob" className="relative z-10 flex flex-col min-h-screen">
+      {/* Hero Section */}
+      <section
+        id="hero"
+        className="relative min-h-screen flex items-center z-0 pt-20 pb-16 md:pt-24 md:pb-24"
+      >
+        {/* Decorative Blur Effects */}
+        <div className="absolute top-20 right-0 h-96 w-96 rounded-full bg-blue-500/20 blur-3xl" />
+        <div className="absolute bottom-0 left-0 h-80 w-80 rounded-full bg-green-500/20 blur-3xl" />
 
-        {/* Hero */}
-        <section className="flex-1 flex flex-col items-center justify-center px-4 py-16 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-2xl mx-auto"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 
-              rounded-full bg-black/30 backdrop-blur-sm text-primary text-sm font-medium mb-6">
-              <Activity className="w-4 h-4" />
-              AI-Powered Health Guidance
-            </div>
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Left Content */}
+            <div className="text-center lg:text-left">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 text-sm font-medium text-white mb-6">
+                <Shield className="w-4 h-4" />
+                AI-Powered Health Assessment
+              </div>
 
-            <h1 className="text-4xl md:text-5xl font-baloo lg:text-6xl font-bold text-white leading-tight mb-4">
-              PULSE <span className="text-primary">A<strong className="text-red-500 ">I</strong></span>
-            </h1>
+              {/* Heading */}
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-300 leading-tight mb-6">
+                Assess Your Symptoms in{" "}
+                <span className="slong">Minutes</span>, Not Hours
+              </h1>
 
-            <p className="text-lg md:text-md text-white/90 mb-8 max-w-lg mx-auto">
-              Get guidance on your symptoms in minutes. Answer a few questions and receive personalized health insights.
-            </p>
+              {/* Description */}
+              <p className="text-lg md:text-xl text-white/80 leading-relaxed max-w-xl mx-auto lg:mx-0 mb-8">
+                Get instant, AI-driven preliminary health guidance.
+                Enter your symptoms and receive a risk assessment
+                to help you make informed decisions about your next steps.
+              </p>
 
-            <Button
-              size="lg"
-              onClick={() => navigate("/assess")}
-              className="text-lg px-8 py-6 font-baloo rounded-xl 
-              bg-primary text-white
-              hover:bg-white hover:text-primary hover:border-primary 
-              transition-all duration-300 hover:shadow-sm"
-            >
-              Start Assessment
-            </Button>
+              {/* Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-10">
+                <button
+                  onClick={() =>
+                    scrollToSection("start-assessment")
+                  }
+                  className=" w-[50%] text-white py-2  btn-fill
+                 rounded-full font-semibold  flex items-center justify-center gap-2"
+                >
+                  Start Assessment
 
-            <p className="mt-6 text-md text-white/70 max-w-sm mx-auto">
-              This tool provides guidance only and does not replace professional medical advice.
-              Always consult a healthcare provider.
-            </p>
-          </motion.div>
-        </section>
+                  <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </button>
 
-        {/* Features */}
-        <section className="px-4 pb-16">
-          <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-6">
-            {features.map((f, i) => (
-              <motion.div
-                key={f.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 + i * 0.1, duration: 0.5 }}
-                className="p-6 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-center"
-              >
-                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center mx-auto mb-4">
-                  <f.icon className="w-6 h-6 text-primary" />
+                <button
+                  onClick={() =>
+                    scrollToSection("how-it-works")
+                  }
+                  className="bg-white/10 backdrop-blur-md hover:bg-white/20 text-white px-8 py-4 rounded-xl font-semibold text-lg border border-white/20 transition-all duration-300"
+                >
+                  Learn More
+                </button>
+              </div>
+
+              {/* Trust Indicators */}
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-6 text-sm text-white/70">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-green-400" />
+                  <span>Takes ~3 minutes</span>
                 </div>
 
-                <h3 className="font-semibold text-white mb-2">{f.title}</h3>
-                <p className="text-sm text-white/70">{f.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </section>
+                <div className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-blue-400" />
+                  <span>No login required</span>
+                </div>
 
-        {/* Footer */}
-
-    <footer className="w-full bg-black/40 backdrop-blur-md border-t border-white/10 text-white/80">
-      <div className="max-w-7xl mx-auto px-6 py-12">
-
-        {/* TOP GRID */}
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-5">
-
-          {/* BRAND */}
-          <div className="space-y-4">
-            <h2 className="text-2xl font-baloo font-bold text-white">
-              PULSE <span className="text-primary">A<strong className="text-red-500 ">I</strong> </span>
-            </h2>
-            <p className="text-sm text-white/70 leading-relaxed">
-              AI-powered health guidance that helps you understand symptoms and make informed decisions quickly and safely.
-            </p>
-
-            <div className="flex gap-4 pt-2">
-              <Twitter className="w-5 h-5 cursor-pointer hover:text-primary transition" />
-              <Linkedin className="w-5 h-5 cursor-pointer hover:text-primary transition" />
-              <Github className="w-5 h-5 cursor-pointer hover:text-primary transition" />
-            </div>
-          </div>
-
-          {/* PRODUCT */}
-          <div>
-            <h3 className="font-semibold text-white mb-4">Product</h3>
-            <ul className="space-y-2 text-sm">
-              <li className="hover:text-primary cursor-pointer">Symptom Checker</li>
-              <li className="hover:text-primary cursor-pointer">AI Analysis</li>
-              <li className="hover:text-primary cursor-pointer">Health Reports</li>
-              <li className="hover:text-primary cursor-pointer">Mobile App</li>
-            </ul>
-          </div>
-
-          {/* COMPANY */}
-          <div>
-            <h3 className="font-semibold text-white mb-4">Company</h3>
-            <ul className="space-y-2 text-sm">
-              <li className="hover:text-primary cursor-pointer">About Us</li>
-              <li className="hover:text-primary cursor-pointer">Careers</li>
-              <li className="hover:text-primary cursor-pointer">Blog</li>
-              <li className="hover:text-primary cursor-pointer">Press</li>
-            </ul>
-          </div>
-
-          {/* RESOURCES */}
-          <div>
-            <h3 className="font-semibold text-white mb-4">Resources</h3>
-            <ul className="space-y-2 text-sm">
-              <li className="hover:text-primary cursor-pointer">Help Center</li>
-              <li className="hover:text-primary cursor-pointer">Documentation</li>
-              <li className="hover:text-primary cursor-pointer">API Access</li>
-              <li className="hover:text-primary cursor-pointer">Community</li>
-            </ul>
-          </div>
-
-          {/* CONTACT + NEWSLETTER */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-white">Stay Updated</h3>
-
-            <div className="flex items-center gap-2 bg-white/10 rounded-lg p-2">
-              <input
-                type="email"
-                placeholder="Your email"
-                className="bg-transparent outline-none text-sm flex-1 placeholder:text-white/50"
-              />
-              <button className="bg-primary text-white px-3 py-1 rounded-md text-sm hover:opacity-90">
-                Subscribe
-              </button>
+                <div className="flex items-center gap-2">
+                  <Star className="w-4 h-4 text-yellow-400" />
+                  <span>Free to use</span>
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-2 text-sm text-white/70 pt-2">
-              <div className="flex items-center gap-2">
-                <Mail className="w-4 h-4" />
-                support@pulseai.com
+            {/* Right Card */}
+            <div className="relative hidden lg:block">
+              <div className="relative bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-8 shadow-2xl">
+                <div className="bg-white/5 rounded-2xl p-6">
+                  {/* Window Dots */}
+                  <div className="flex gap-3 mb-6">
+                    <div className="w-3 h-3 rounded-full bg-red-400" />
+                    <div className="w-3 h-3 rounded-full bg-yellow-400" />
+                    <div className="w-3 h-3 rounded-full bg-green-400" />
+                  </div>
+
+                  {/* Symptoms */}
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {["Headache", "Fatigue", "Fever"].map(
+                      (symptom) => (
+                        <span
+                          key={symptom}
+                          className="bg-blue-500/20 text-blue-200 px-3 py-1.5 rounded-full text-sm"
+                        >
+                          {symptom}
+                        </span>
+                      )
+                    )}
+
+                    <span className="bg-green-500/20 text-green-200 px-3 py-1.5 rounded-full text-sm">
+                      +2 more
+                    </span>
+                  </div>
+
+                  {/* Progress */}
+                  <div className="mb-4">
+                    <div className="flex justify-between text-sm text-white/70 mb-2">
+                      <span>Assessment Progress</span>
+                      <span>75%</span>
+                    </div>
+
+                    <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+                      <div className="h-full w-3/4 bg-gradient-to-r from-blue-500 to-green-500 rounded-full" />
+                    </div>
+                  </div>
+
+                  {/* AI Status */}
+                  <div className="bg-white/10 rounded-xl p-4 border border-white/10">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <Shield className="w-4 h-4 text-white" />
+                      </div>
+
+                      <div>
+                        <p className="text-sm font-medium text-white">
+                          AI Analyzing...
+                        </p>
+
+                        <p className="text-xs text-white/60">
+                          Processing 12 symptom patterns
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4" />
-                +234 8169315045
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
-                Lagos, Nigeria
+
+              {/* Floating Badge */}
+              <div className="absolute -top-4 -right-4 bg-red-500 text-white px-4 py-2 rounded-xl shadow-lg animate-bounce">
+                <span className="font-semibold">Low Risk</span>
               </div>
             </div>
           </div>
         </div>
-
-        {/* DIVIDER */}
-        <div className="border-t border-white/10 my-8"></div>
-
-        {/* BOTTOM ROW */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-white/60">
-
-          <p>© {new Date().getFullYear()} PULSE AI. All rights reserved.</p>
-
-          <div className="flex gap-6">
-            <span className="hover:text-primary cursor-pointer">Privacy Policy</span>
-            <span className="hover:text-primary cursor-pointer">Terms of Service</span>
-            <span className="hover:text-primary cursor-pointer">Cookies</span>
-          </div>
-
-        </div>
-      </div>
-    </footer>
-
-      </div>
+      </section>
+      
     </div>
+    <DisclaimerCard/>
+      <HowItWorks/>
+      <Benefits/>
+      <AssessmentCTA/>
+      <Footer/>
+
+    </>
   );
 };
 

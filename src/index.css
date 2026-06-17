@@ -100,3 +100,78 @@
     @apply font-display;
   }
 }
+.slong{
+
+  font-weight: bold;
+  background: linear-gradient(to right, #42a5f5, #bc4747, #43ff6c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% auto;
+  animation: sweep 6s linear infinite;
+}
+
+
+
+
+@keyframes sweep {
+  0% { background-position: 200% center; }
+  100% { background-position: 0 center; }
+}
+.btn-fill {
+  position: relative;
+  overflow: hidden;
+  background-color: #202D60; /* Base state is transparent or a border */
+  border: 2px solid #202D60;
+  color:white;
+  z-index: 1;
+  transition: color 0.4s ease;
+}
+
+.btn-fill::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0; /* Start with no width */
+  height: 100%;
+  background-color: #1ef955; /* The "Fill" color */
+  transition: width 0.4s ease;
+  z-index: -1; /* Keeps the color behind the text */
+}
+
+.btn-fill:hover {
+  color: #000000; /* Changes text color when filled */
+}
+
+.btn-fill:hover::before {
+  width: 100%; /* Expands to fill the button */
+}
+.btn-filled {
+  position: relative;
+  overflow: hidden;
+  background-color: #202D60; /* Base state is transparent or a border */
+  border: 2px solid #202D60;
+  color:white;
+  z-index: 1;
+  transition: color 0.4s ease;
+}
+
+.btn-filled::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0; /* Start with no width */
+  height: 100%;
+  background-color: #1ea9f93b; /* The "Fill" color */
+  transition: width 0.4s ease;
+  z-index: -1; /* Keeps the color behind the text */
+}
+
+.btn-filled:hover {
+  color: #ffffff; /* Changes text color when filled */
+}
+
+.btn-filled:hover::before {
+  width: 100%; /* Expands to fill the button */
+}

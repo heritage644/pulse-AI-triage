@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger,
+   SelectValue } from "@/components/ui/select";
 import SymptomTagInput from "@/components/SymptomTagInput";
 import SeveritySelector from "@/components/SeveritySelector";
 import ProgressBar from "@/components/ProgressBar";
@@ -34,7 +35,7 @@ const SymptomInput = () => {
     if (!validate()) return;
       console.log(
         {
-           symptoms: ctx.symptoms,
+        symptoms: ctx.symptoms,
         age: ctx.age!,
         duration: ctx.duration,
         severity: ctx.severity!
@@ -42,19 +43,17 @@ const SymptomInput = () => {
       )
     setLoading(true);
     try {
-      const res = await triageApi.start({
-        symptoms: ctx.symptoms,
-        age: ctx.age!,
-        duration: ctx.duration,
-        severity: ctx.severity!,
-      });
-      ctx.setSessionId(res.sessionId);
-      ctx.setQuestions(res.questions);
-      navigate("/FollowUp");
+      const res = await fetch("/fetch", {
+        method:"POST",
+        headers : {
+          "content/type": "application/json",
+        },
+        body:JSON.stringify("")
+      })
     
     } catch (err) {
       toast({
-        title: "Nothing went wrong",
+        title: "Something went wrong",
         description: err instanceof Error ? err.message : "Please try again in 1min.",
         variant: "destructive",
       });
@@ -64,7 +63,7 @@ const SymptomInput = () => {
   };
 
   return (
-    <div className="min-h-screen    px-4 py-8 max-w-xl mx-auto">
+    <div className="min-h-screen bg-slate-100 px-4 py-8 max-w-xl mx-auto">
       <ProgressBar current={0} total={3} labels={["Symptoms", "Questions", "Results"]} />
 
       <motion.div

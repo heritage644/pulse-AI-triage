@@ -39,7 +39,7 @@ const SymptomTagInput = ({ symptoms, onChange, error }: SymptomTagInputProps) =>
         Symptoms
       </label>
       <div
-        className={`flex flex-wrap gap-2 p-3 rounded-lg border bg-card min-h-[48px] 
+        className={`flex flex-wrap gap-2 p-3 border rounded-lg bg-card min-h-[48px] 
           focus-within:ring-2 focus-within:ring-ring ${
           error ? "border-destructive" : "border-input"
         }`}
@@ -64,7 +64,8 @@ const SymptomTagInput = ({ symptoms, onChange, error }: SymptomTagInputProps) =>
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={symptoms.length ? "Add more..." : "Type a symptom and press Enter"}
-          className="border-0 shadow-none p-0 h-auto focus-visible:ring-0 flex-1 min-w-[150px] bg-transparent"
+          className="border-0 shadow-none p-1 h-auto focus-visible:ring-0 flex-1  
+          bg-transparent"
         />
       </div>
       {error && <p className="text-sm text-destructive mt-1">{error}</p>}
