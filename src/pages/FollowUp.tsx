@@ -18,7 +18,7 @@ const FollowUp = () => {
   const [collectedAnswers, setCollectedAnswers] = useState<{ question: string; answer: string }[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const questions = ctx.questions;
+ const questions = ctx.questions ?? [];
 
   if (!questions.length || !ctx.sessionId) {
     navigate("/assess");
@@ -27,39 +27,71 @@ const FollowUp = () => {
 
   const isLast = currentIdx === questions.length - 1;
 
-  const handleNext = async () => {
-    if (!currentAnswer.trim()) {
-      toast({ title: "Please provide an answer", variant: "destructive" });
-      return;
-    }
+const handleNext = async () => {
+  if (!currentAnswer.trim()) {
+    toast({
+      title: "Please provide an answer",
+      variant: "destructive",
+    });
+    return;
+  }
 
-    const newAnswers = [...collectedAnswers, { question: questions[currentIdx], answer: currentAnswer.trim() }];
+  const newAnswers = [
+    ...collectedAnswers,
+    {
+        questionId: questions[currentIdx].questionId,
+  question: questions[currentIdx].question,
+  answer: currentAnswer.trim(),
+    },
+  ];
 
-    if (isLast) {
-      setLoading(true);
-      try {
-        const result = await triageApi.answer({
-          sessionId: ctx.sessionId!,
-          answers: newAnswers,
-        });
-        ctx.setAnswers(newAnswers);
-        ctx.setResult(result);
-        navigate("/results");
-      } catch (err) {
-        toast({
-          title: "Something went wrong",
-          description: err instanceof Error ? err.message : "Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
+  if (isLast) {
+    setLoading(true);
+
+    try {
+      const res = await fetch(
+        `https://scaling-lamp-56pjq7pp7xg24p6v-4000.app.github.dev/api/triage/${ctx.sessionId}/followup`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            sessionId: ctx.sessionId,
+            answers: newAnswers,
+          }),
+        }
+      );
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to submit answers");
       }
-    } else {
-      setCollectedAnswers(newAnswers);
-      setCurrentAnswer("");
-      setCurrentIdx((i) => i + 1);
+
+      const data = await res.json();
+
+      ctx.setAnswers(newAnswers);
+      ctx.setResult(data);
+
+      navigate("/loading-assessment");
+    } catch (err) {
+      toast({
+        title: "Something went wrong",
+        description:
+          err instanceof Error
+            ? err.message
+            : "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
-  };
+  } else {
+    setCollectedAnswers(newAnswers);
+    setCurrentAnswer("");
+    setCurrentIdx((prev) => prev + 1);
+  }
+};
 
   return (
     <div className="min-h-screen px-4 py-8 max-w-xl mx-auto">
@@ -80,7 +112,7 @@ const FollowUp = () => {
           transition={{ duration: 0.3 }}
           className="space-y-6"
         >
-          <h2 className="text-xl font-semibold text-foreground">{questions[currentIdx]}</h2>
+          <h2 className="text-xl font-semibold text-foreground">{questions[currentIdx].question}</h2>
 
           <Input
             value={currentAnswer}

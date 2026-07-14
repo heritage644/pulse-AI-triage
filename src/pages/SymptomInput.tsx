@@ -31,25 +31,36 @@ const SymptomInput = () => {
     return Object.keys(e).length === 0;
   };
 
+
   const handleSubmit = async () => {
     if (!validate()) return;
-      console.log(
-        {
-        symptoms: ctx.symptoms,
-        age: ctx.age!,
-        duration: ctx.duration,
-        severity: ctx.severity!
-        }
-      )
+    const payload = {
+   symptoms: ctx.symptoms,
+    age: ctx.age,
+     duration: {
+    value: ctx.duration.value,
+    unit: ctx.duration.unit,
+  },
+  severity: ctx.severity,
+   };
     setLoading(true);
     try {
-      const res = await fetch("/fetch", {
+      const res = await fetch("https://scaling-lamp-56pjq7pp7xg24p6v-4000.app.github.dev/api/triage/start", {
         method:"POST",
         headers : {
-          "content/type": "application/json",
+          "Content-Type": "application/json",
         },
-        body:JSON.stringify("")
+        body:JSON.stringify(payload)
       })
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to start assessment");
+      }
+     const response = await res.json();
+
+ctx.setSessionId(response.data.sessionId);
+
+navigate("/loading");;
     
     } catch (err) {
       toast({
@@ -59,6 +70,7 @@ const SymptomInput = () => {
       });
     } finally {
       setLoading(false);
+      
     }
   };
 

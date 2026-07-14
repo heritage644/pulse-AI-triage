@@ -10,8 +10,8 @@ import FollowUp from "./pages/FollowUp";
 import Results from "./pages/Results";
 import History from "./pages/History";
 import NotFound from "./pages/NotFound";
-
-
+import Loading from "./pages/loading";
+import LoadingAssessment from "./pages/loading-assesment";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -24,8 +24,10 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/assess" element={<SymptomInput />} />
+            <Route path="/loading" element={<Loading />} />
             <Route path="/follow-up" element={<FollowUp />} />
             <Route path="/results" element={<Results />} />
+            <Route path="/loading-assessment" element={<LoadingAssessment />} />
             <Route path="/history" element={<History />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

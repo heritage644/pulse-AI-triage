@@ -41,7 +41,9 @@ const BenefitsSection = () => {
             Why Choose Us
           </span>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-800 mb-4">
-            Benefits of pulseAI
+            Benefits of 
+            pulse<strong className='text-blue-500'>A</strong><strong className='text-red-500'>I</strong>
+          
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
             Designed with your needs in mind to provide quick, reliable health guidance

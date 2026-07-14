@@ -1,5 +1,10 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
-import type { SeverityLevel, Duration, TriageResult } from "@/types/triage";
+import type {
+  SeverityLevel,
+  Duration,
+  TriageResult,
+  FollowUpQuestion,
+} from "@/types/triage";
 
 interface TriageState {
   sessionId: string | null;
@@ -7,7 +12,7 @@ interface TriageState {
   age: number | null;
   duration: Duration;
   severity: SeverityLevel | null;
-  questions: string[];
+  questions: FollowUpQuestion[];
   answers: { question: string; answer: string }[];
   result: TriageResult | null;
 }
@@ -18,7 +23,7 @@ interface TriageContextType extends TriageState {
   setDuration: (d: Duration) => void;
   setSeverity: (s: SeverityLevel | null) => void;
   setSessionId: (id: string) => void;
-  setQuestions: (q: string[]) => void;
+  setQuestions: (q: FollowUpQuestion[]) => void;
   setAnswers: (a: { question: string; answer: string }[]) => void;
   setResult: (r: TriageResult | null) => void;
   reset: () => void;
@@ -28,7 +33,10 @@ const initial: TriageState = {
   sessionId: null,
   symptoms: [],
   age: null,
-  duration: { value: 1, unit: "days" },
+  duration: {
+    value: 1,
+    unit: "days",
+  },
   severity: null,
   questions: [],
   answers: [],
@@ -37,13 +45,22 @@ const initial: TriageState = {
 
 const TriageContext = createContext<TriageContextType | undefined>(undefined);
 
-export const TriageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const TriageProvider: React.FC<{
+  children: React.ReactNode;
+}> = ({ children }) => {
   const [state, setState] = useState<TriageState>(initial);
 
-  const update = <K extends keyof TriageState>(key: K) =>
-    (val: TriageState[K]) => setState((s) => ({ ...s, [key]: val }));
+  const update =
+    <K extends keyof TriageState>(key: K) =>
+    (value: TriageState[K]) =>
+      setState((prev) => ({
+        ...prev,
+        [key]: value,
+      }));
 
-  const reset = useCallback(() => setState(initial), []);
+  const reset = useCallback(() => {
+    setState(initial);
+  }, []);
 
   return (
     <TriageContext.Provider
@@ -67,6 +84,10 @@ export const TriageProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
 export const useTriage = () => {
   const ctx = useContext(TriageContext);
-  if (!ctx) throw new Error("useTriage must be used within TriageProvider");
+
+  if (!ctx) {
+    throw new Error("useTriage must be used within a TriageProvider");
+  }
+
   return ctx;
 };

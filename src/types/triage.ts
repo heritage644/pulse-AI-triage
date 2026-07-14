@@ -19,6 +19,11 @@ export interface FollowUpResponse {
   questions: string[];
 }
 
+export interface FollowUpQuestion {
+  questionId: string;
+  question: string;
+  category: string;
+}
 export interface AnswerPayload {
   sessionId: string;
   answers: { question: string; answer: string }[];

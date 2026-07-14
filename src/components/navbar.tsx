@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Menu, X, Activity } from 'lucide-react';
+import logo from "@/assets/logo.png";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -39,11 +40,9 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <div className="flex items-center gap-2 cursor-pointer">
-            <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center">
-              <Activity className="w-6 h-6 text-white" />
-            </div>
+            <img src="/logo (1).svg" alt="Pulse AI Logo" />
             <span className="font-bold text-lg md:text-xl text-slate-800">
-            pulse<strong className='text-blue-500'>A</strong><strong className='text-red-500'>I</strong>
+            pulse<strong className='text-blue-500'>A</strong><strong className='text-[#6e80ff]'>I</strong>
             </span>
           </div>
 
@@ -99,7 +98,8 @@ const Navbar = () => {
           ))}
           <button
             onClick={() => scrollToSection('start-assessment')}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg font-medium transition-colors"
+            className="w-full bg-[#6e80ff] hover:bg-blue-700 text-white px-5 py-3 
+            rounded-lg font-medium transition-colors"
           >
             Get Started
           </button>

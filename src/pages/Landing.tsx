@@ -5,6 +5,7 @@ import HowItWorks from "@/components/howitworks";
 import AssessmentCTA from "@/components/assesment";
 import Benefits from "@/components/benefits";
 import Footer from "@/components/footer";
+import logo from "@/assets/logo.png";
 const Landing = () => {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
