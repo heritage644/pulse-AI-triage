@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useTriage } from "@/context/TriageContext";
 
 const API_BASE =
-  "https://scaling-lamp-56pjq7pp7xg24p6v-4000.app.github.dev/api";
+  "https://miniature-space-orbit-r9vqg5vvjp93w5j-4000.app.github.dev/api";
 
 const Loading = () => {
   const navigate = useNavigate();

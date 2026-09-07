@@ -45,7 +45,7 @@ const SymptomInput = () => {
    };
     setLoading(true);
     try {
-      const res = await fetch("https://scaling-lamp-56pjq7pp7xg24p6v-4000.app.github.dev/api/triage/start", {
+      const res = await fetch("https://miniature-space-orbit-r9vqg5vvjp93w5j-4000.app.github.dev/api/triage/start", {
         method:"POST",
         headers : {
           "Content-Type": "application/json",
@@ -75,7 +75,7 @@ navigate("/loading");;
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 px-4 py-8 max-w-xl mx-auto">
+    <div className="min-h-screen bg-white px-4 py-8 max-w-xl mx-auto">
       <ProgressBar current={0} total={3} labels={["Symptoms", "Questions", "Results"]} />
 
       <motion.div

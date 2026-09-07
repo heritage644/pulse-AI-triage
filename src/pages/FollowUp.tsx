@@ -50,7 +50,7 @@ const handleNext = async () => {
 
     try {
       const res = await fetch(
-        `https://scaling-lamp-56pjq7pp7xg24p6v-4000.app.github.dev/api/triage/${ctx.sessionId}/followup`,
+        `https://miniature-space-orbit-r9vqg5vvjp93w5j-4000.app.github.dev/api/triage/${ctx.sessionId}/followup`,
         {
           method: "POST",
           headers: {
@@ -94,7 +94,7 @@ const handleNext = async () => {
 };
 
   return (
-    <div className="min-h-screen px-4 py-8 max-w-xl mx-auto">
+    <div className="min-h-screen px-4 py-8  max-w-xl mx-auto">
       <ProgressBar current={1} total={3} labels={["Symptoms", "Questions", "Results"]} />
 
       <div className="mb-4">

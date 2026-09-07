@@ -1,5 +1,5 @@
 import { Zap, UserCheck, Brain, HeartHandshake } from 'lucide-react';
-
+import CountUp from './counter';
 const BenefitsSection = () => {
   const benefits = [
     {
@@ -37,12 +37,13 @@ const BenefitsSection = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <span className="inline-block bg-green-100 text-green-700 px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
+          <span className="inline-block bg- text-white px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
             Why Choose Us
           </span>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-800 mb-4">
-            Benefits of 
-            pulse<strong className='text-blue-500'>A</strong><strong className='text-red-500'>I</strong>
+            Benefits of {" "}
+          <strong className='text-[#6e80ff]'>Pulse</strong><strong className='text-[#34d1fc]'>A</strong>
+            <strong className='text-[#6e80ff]'>I</strong>
           
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
@@ -56,7 +57,8 @@ const BenefitsSection = () => {
           {benefits.map((benefit, index) => (
             <div
               key={index}
-              className="group bg-white rounded-2xl p-6 lg:p-8 border border-slate-100 hover:border-slate-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              className="group bg-white rounded-2xl p-6 lg:p-8 border border-slate-100
+                "
             >
               {/* Icon */}
               <div
@@ -80,7 +82,9 @@ const BenefitsSection = () => {
         <div className="mt-16 bg-gradient-to-r from-blue-600 to-blue-500 rounded-3xl p-8 md:p-12">
           <div className="grid sm:grid-cols-3 gap-8 text-center text-white">
             <div>
-              <div className="text-4xl md:text-5xl font-bold mb-2">100%</div>
+              <div className="text-4xl md:text-5xl font-bold mb-2">
+  <CountUp end={100} suffix="%" />
+</div>
               <div className="text-blue-100">Free to Use</div>
             </div>
             <div>

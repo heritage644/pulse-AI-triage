@@ -27,10 +27,10 @@ const riskConfig: Record<
     bgClass: "bg-risk-low/10",
     icon: CheckCircle2,
   },
-  medium: {
-    label: "Medium Risk",
-    colorClass: "text-risk-medium",
-    bgClass: "bg-risk-medium/10",
+  moderate: {
+    label: "Moderate Risk",
+    colorClass: "text-risk-moderate",
+    bgClass: "bg-risk-moderate/10",
     icon: AlertCircle,
   },
   high: {
@@ -63,7 +63,8 @@ const Results = () => {
     possibleConditions,
     confidence,
   } = ctx.result;
-
+console.log("🔍 riskLevel received:", riskLevel);
+console.log("🔍 available risk levels:", Object.keys(riskConfig));
   const config = riskConfig[riskLevel];
   const Icon = config.icon;
 

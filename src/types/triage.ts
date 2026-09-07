@@ -1,6 +1,6 @@
 export type SeverityLevel = "mild" | "moderate" | "severe" | "extreme";
 export type DurationUnit = "hours" | "days" | "weeks";
-export type RiskLevel = "low" | "medium" | "high" | "emergency";
+export type RiskLevel = "low" | "moderate" | "high" | "emergency";
 
 export interface Duration {
   value: number;

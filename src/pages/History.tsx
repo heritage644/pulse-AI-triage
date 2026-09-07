@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const riskColors: Record<RiskLevel, string> = {
   low: "bg-risk-low",
-  medium: "bg-risk-medium",
+  moderate: "bg-risk-moderate",
   high: "bg-risk-high",
   emergency: "bg-risk-emergency",
 };

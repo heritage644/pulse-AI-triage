@@ -30,10 +30,10 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 pt-5 transition-all duration-300 ${
         isScrolled
-          ? 'bg-white/95 backdrop-blur-md shadow-sm '
-          : 'bg-white/95 backdrop-blur-md'
+          ? ' backdrop-blur-md shadow-sm text-[#6e80ff] '
+          : ' backdrop-blur-md text-[#09bcee] '
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -41,8 +41,9 @@ const Navbar = () => {
           {/* Logo */}
           <div className="flex items-center gap-2 cursor-pointer">
             <img src="/logo (1).svg" alt="Pulse AI Logo" />
-            <span className="font-bold text-lg md:text-xl text-slate-800">
-            pulse<strong className='text-blue-500'>A</strong><strong className='text-[#6e80ff]'>I</strong>
+            <span className={`font-bold text-lg md:text-xl  `}>
+            pulse<strong className='text-[#34d1fc]'>A</strong>
+            <strong className='text-[#6e80ff]'>I</strong>
             </span>
           </div>
 
@@ -52,14 +53,17 @@ const Navbar = () => {
               <button
                 key={link.id}
                 onClick={() => scrollToSection(link.id)}
-                className="text-slate-600 hover:text-blue-600 font-medium transition-colors duration-200"
+                className="text-slate-600 hover:text-[#6e80ff] font-medium
+                 transition-colors duration-200"
               >
                 {link.label}
               </button>
             ))}
             <button
               onClick={() => scrollToSection('start-assessment')}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
+              className={`text-[#09bcee]
+                 ${isScrolled && "text-[#6e80ff] duration-200 transition-all" } 
+                  font-medium`}
             >
               Get Started
             </button>

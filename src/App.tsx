@@ -12,9 +12,15 @@ import History from "./pages/History";
 import NotFound from "./pages/NotFound";
 import Loading from "./pages/loading";
 import LoadingAssessment from "./pages/loading-assesment";
+import {CognitionField} from "./components/cognitionfiels";
+import Navbar from "./components/navbar";
+import {TrustBar} from "./components/trustbar";
 const queryClient = new QueryClient();
 
-const App = () => (
+export default function App() {
+  return(
+    <>
+  
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <TriageProvider>
@@ -35,6 +41,7 @@ const App = () => (
       </TriageProvider>
     </TooltipProvider>
   </QueryClientProvider>
-);
+  </>
+  )
+}
 
-export default App;

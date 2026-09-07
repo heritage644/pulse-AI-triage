@@ -60,7 +60,7 @@ const HowItWorks = () => {
 
                 {/* Icon */}
                 <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 mt-4">
-                  <step.icon className="w-8 h-8 text-red-600" />
+                  <step.icon className="w-8 h-8 text-[#2720ff]" />
                 </div>
 
                 {/* Content */}
@@ -100,7 +100,7 @@ const HowItWorks = () => {
         {/* Time Estimate */}
         <div className="text-center mt-12">
           <div className="inline-flex items-center gap-3 bg-white px-6 py-3 rounded-full shadow-sm border border-slate-100">
-            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
+            <div className="w-3 h-3 bg-[#2720ff] rounded-full animate-pulse" />
             <span className="text-slate-600">
               Most assessments are completed in{' '}
               <strong className="text-slate-800">under 3 minutes</strong>

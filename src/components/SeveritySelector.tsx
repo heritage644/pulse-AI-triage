@@ -34,7 +34,7 @@ const SeveritySelector = ({ value, onChange, error }: SeveritySelectorProps) => 
             }`}
           >
             <div className="flex items-center gap-2 mb-1">
-              <span className={`w-3 h-3 rounded-full ${opt.colorClass}`} />
+              <span className={`w-3 h-3 ${opt.colorClass}`} />
               <span className="font-semibold text-sm text-foreground">{opt.label}</span>
             </div>
             <span className="text-xs text-muted-foreground">{opt.description}</span>
