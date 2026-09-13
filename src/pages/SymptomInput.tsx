@@ -45,7 +45,7 @@ const SymptomInput = () => {
    };
     setLoading(true);
     try {
-      const res = await fetch("https://miniature-space-orbit-r9vqg5vvjp93w5j-4000.app.github.dev/api/triage/start", {
+      const res = await fetch("https://ai-triage-api-4.onrender.com/api/triage/start", {
         method:"POST",
         headers : {
           "Content-Type": "application/json",

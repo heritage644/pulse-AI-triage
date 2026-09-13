@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useTriage } from "@/context/TriageContext";
 
 const API_BASE =
-  "https://miniature-space-orbit-r9vqg5vvjp93w5j-4000.app.github.dev/api";
+  "https://ai-triage-api-4.onrender.com/api";
 
 const LoadingAssessment = () => {
   const navigate = useNavigate();

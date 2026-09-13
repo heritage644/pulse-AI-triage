@@ -50,7 +50,7 @@ const handleNext = async () => {
 
     try {
       const res = await fetch(
-        `https://miniature-space-orbit-r9vqg5vvjp93w5j-4000.app.github.dev/api/triage/${ctx.sessionId}/followup`,
+        `https://ai-triage-api-4.onrender.com/api/triage/${ctx.sessionId}/followup`,
         {
           method: "POST",
           headers: {
