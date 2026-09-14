@@ -1,48 +1,47 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { useTriage } from "@/context/TriageContext";
 
-const API_BASE =
-  "https://ai-triage-api-4.onrender.com/api";
+const API_BASE = "https://ai-triage-api-4.onrender.com/api";
 
 const LoadingAssessment = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const ctx = useTriage();
+  const { sessionId, setResult } = useTriage();
 
-  const [status, setStatus] = useState(
-    "Analyzing your responses..."
-  );
+  const [status, setStatus] = useState("Analyzing your responses...");
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (!ctx.sessionId) {
+    if (!sessionId) {
       navigate("/");
       return;
     }
 
-    let cancelled = false;
+    let isMounted = true;
     let attempts = 0;
-    const MAX_ATTEMPTS = 15;
+    const MAX_ATTEMPTS = 30; // Increased threshold for hosted backend latency
 
     const poll = async () => {
       try {
-        const res = await fetch(
-          `${API_BASE}/triage/${ctx.sessionId}/result`
-        );
+        const res = await fetch(`${API_BASE}/triage/${sessionId}/result`, {
+          headers: { "Cache-Control": "no-cache" },
+        });
 
         if (!res.ok) {
           throw new Error("Unable to retrieve assessment.");
         }
 
         const response = await res.json();
-        const data = response.data;
+        // Handle both wrapper formats if envelope structure varies
+        const data = response.data ?? response;
 
-        if (cancelled) return;
+        if (!isMounted) return;
 
-        if (!data.ready) {
+        if (!data?.ready) {
           attempts++;
 
           if (attempts >= MAX_ATTEMPTS) {
@@ -51,28 +50,36 @@ const LoadingAssessment = () => {
               description: "Please try again in a few moments.",
               variant: "destructive",
             });
-
             navigate("/");
             return;
           }
 
           setStatus("AI is analyzing your symptoms...");
-          setTimeout(poll, 2000);
+          timerRef.current = setTimeout(poll, 2000);
           return;
         }
 
-        ctx.setResult({
-          riskLevel: data.assessment.riskLevel.toLowerCase(),
-          recommendation: Array.isArray(data.assessment.recommendations)
-            ? data.assessment.recommendations.join("\n")
-            : data.assessment.recommendations,
-          possibleConditions: data.assessment.possibleConditions ?? [],
-          confidence: data.assessment.confidence ?? 0.9,
+        // Assessment is ready — extract structure securely
+        const assessment = data.assessment || {};
+        
+        setResult({
+          riskLevel: (assessment.riskLevel || "low").toLowerCase(),
+          recommendation: Array.isArray(assessment.recommendations)
+            ? assessment.recommendations.join("\n")
+            : assessment.recommendations || "",
+          possibleConditions: assessment.possibleConditions ?? [],
+          confidence: assessment.confidence ?? 0.9,
         });
 
-        navigate("/results");
+        // Small timeout ensures Context dispatch propagates before route change
+        setTimeout(() => {
+          if (isMounted) navigate("/results");
+        }, 100);
+
       } catch (err) {
-        console.error(err);
+        console.error("Polling error:", err);
+
+        if (!isMounted) return;
 
         toast({
           title: "Something went wrong",
@@ -90,9 +97,10 @@ const LoadingAssessment = () => {
     poll();
 
     return () => {
-      cancelled = true;
+      isMounted = false;
+      if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [ctx, navigate, toast]);
+  }, [sessionId, setResult, navigate, toast]);
 
   return (
     <div className="min-h-screen bg-slate-100 flex items-center justify-center px-6">
