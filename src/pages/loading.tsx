@@ -5,36 +5,37 @@ import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { useTriage } from "@/context/TriageContext";
 
-const API_BASE =
-  "https://ai-triage-api-4.onrender.com/api";
+const API_BASE = "https://ai-triage-api-4.onrender.com/api";
 
 const Loading = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const ctx = useTriage();
+  const sessionId = ctx.sessionId;
+  const setQuestions = ctx.setQuestions;
 
   const [status, setStatus] = useState(
     "Generating personalized follow-up questions..."
   );
 
   useEffect(() => {
-    if (!ctx.sessionId) {
+    if (!sessionId) {
       navigate("/");
       return;
     }
 
     let cancelled = false;
     let attempts = 0;
-    const MAX_ATTEMPTS = 15;
+    // Allow up to 2 minutes of polling (40 attempts * 3000ms = 120s)
+    const MAX_ATTEMPTS = 40; 
+    const POLL_INTERVAL_MS = 3000;
 
     const poll = async () => {
       try {
-        const res = await fetch(
-          `${API_BASE}/triage/${ctx.sessionId}`
-        );
+        const res = await fetch(`${API_BASE}/triage/${sessionId}`);
 
         if (!res.ok) {
-          throw new Error("Unable to fetch session.");
+          throw new Error("Unable to fetch session status.");
         }
 
         const response = await res.json();
@@ -51,14 +52,13 @@ const Loading = () => {
           data.followUp?.questions
         ) {
           setStatus("Questions ready!");
-
-          ctx.setQuestions(data.followUp.questions);
+          setQuestions(data.followUp.questions);
 
           setTimeout(() => {
             navigate("/follow-up");
           }, 800);
 
-          return;
+          return; // Stop polling on success
         }
 
         attempts++;
@@ -66,24 +66,30 @@ const Loading = () => {
         if (attempts >= MAX_ATTEMPTS) {
           toast({
             title: "Taking longer than expected",
-            description:
-              "Please try again in a few moments.",
+            description: "Please refresh or try again in a few moments.",
             variant: "destructive",
           });
-
-          return;
+          return; // Stop polling on timeout
         }
 
-        setTimeout(poll, 2000);
+        setTimeout(poll, POLL_INTERVAL_MS);
       } catch (err) {
-        toast({
-          title: "Something went wrong",
-          description:
-            err instanceof Error
-              ? err.message
-              : "Unable to contact the server.",
-          variant: "destructive",
-        });
+        if (cancelled) return;
+        
+        // Log error and retry instead of instantly aborting
+        attempts++;
+        if (attempts < MAX_ATTEMPTS) {
+          setTimeout(poll, POLL_INTERVAL_MS);
+        } else {
+          toast({
+            title: "Something went wrong",
+            description:
+              err instanceof Error
+                ? err.message
+                : "Unable to contact the server.",
+            variant: "destructive",
+          });
+        }
       }
     };
 
@@ -92,7 +98,7 @@ const Loading = () => {
     return () => {
       cancelled = true;
     };
-  }, [ctx, navigate, toast]);
+  }, [sessionId, setQuestions, navigate, toast]);
 
   return (
     <div className="min-h-screen bg-slate-100 flex items-center justify-center px-6">
@@ -102,22 +108,14 @@ const Loading = () => {
         className="bg-white rounded-2xl shadow-lg p-10 w-full max-w-md text-center"
       >
         <motion.div
-          animate={{
-            rotate: 360,
-          }}
-          transition={{
-            repeat: Infinity,
-            duration: 1.2,
-            ease: "linear",
-          }}
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1.2, ease: "linear" }}
           className="flex justify-center mb-6"
         >
           <Loader2 className="h-16 w-16 text-blue-600" />
         </motion.div>
 
-        <h1 className="text-2xl font-bold mb-3">
-          Preparing Your Assessment
-        </h1>
+        <h1 className="text-2xl font-bold mb-3">Preparing Your Assessment</h1>
 
         <p className="text-muted-foreground mb-8">
           We're analyzing your symptoms and generating personalized follow-up
@@ -142,7 +140,7 @@ const Loading = () => {
         </div>
 
         <p className="mt-8 text-sm text-muted-foreground">
-          This usually takes between <strong>5-15 seconds</strong>.
+          This usually takes between <strong>15-45 seconds</strong>.
         </p>
       </motion.div>
     </div>
