@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -51,26 +52,32 @@ const Results = () => {
   const navigate = useNavigate();
   const ctx = useTriage();
 
-  // User refreshed the page or accessed /results directly
+  useEffect(() => {
+    if (!ctx.sessionId || !ctx.result) {
+      navigate("/", { replace: true });
+    }
+  }, [ctx.sessionId, ctx.result, navigate]);
+
   if (!ctx.sessionId || !ctx.result) {
-    navigate("/");
     return null;
   }
 
   const {
-    riskLevel,
-    recommendation,
-    possibleConditions,
-    confidence,
+    riskLevel = "low",
+    recommendation = "",
+    possibleConditions = [],
+    confidence = 0,
   } = ctx.result;
-console.log("🔍 riskLevel received:", riskLevel);
-console.log("🔍 available risk levels:", Object.keys(riskConfig));
-  const config = riskConfig[riskLevel];
+
+  const normalizedLevel = String(riskLevel).toLowerCase() as RiskLevel;
+  const config = riskConfig[normalizedLevel] || riskConfig.low;
   const Icon = config.icon;
+
+  const safeConfidence = Math.max(0, Math.min(Number(confidence) || 0, 1));
 
   const handleNewAssessment = () => {
     ctx.reset();
-    navigate("/");
+    navigate("/", { replace: true });
   };
 
   return (
@@ -86,10 +93,7 @@ console.log("🔍 available risk levels:", Object.keys(riskConfig));
         animate={{ opacity: 1, y: 0 }}
         className="space-y-6 mt-6"
       >
-        {/* Risk Level */}
-        <div
-          className={`flex items-center gap-4 rounded-xl p-5 ${config.bgClass}`}
-        >
+        <div className={`flex items-center gap-4 rounded-xl p-5 ${config.bgClass}`}>
           <Icon className={`h-8 w-8 ${config.colorClass}`} />
 
           <div>
@@ -103,18 +107,14 @@ console.log("🔍 available risk levels:", Object.keys(riskConfig));
           </div>
         </div>
 
-        {/* Recommendation */}
         <div className="rounded-xl border bg-card p-5">
-          <h3 className="font-semibold text-lg mb-3">
-            Recommendation
-          </h3>
+          <h3 className="font-semibold text-lg mb-3">Recommendation</h3>
 
           <p className="leading-relaxed whitespace-pre-line">
-            {recommendation}
+            {recommendation || "No recommendation available."}
           </p>
         </div>
 
-        {/* Possible Conditions */}
         {possibleConditions.length > 0 && (
           <div className="rounded-xl border bg-card p-5">
             <h3 className="font-semibold text-lg mb-3">
@@ -123,12 +123,8 @@ console.log("🔍 available risk levels:", Object.keys(riskConfig));
 
             <ul className="space-y-2">
               {possibleConditions.map((condition, index) => (
-                <li
-                  key={index}
-                  className="flex gap-2 items-start"
-                >
+                <li key={index} className="flex gap-2 items-start">
                   <span className="mt-2 h-2 w-2 rounded-full bg-primary shrink-0" />
-
                   <span>{condition}</span>
                 </li>
               ))}
@@ -141,15 +137,12 @@ console.log("🔍 available risk levels:", Object.keys(riskConfig));
           </div>
         )}
 
-        {/* Confidence */}
         <div className="rounded-xl border bg-card p-5">
           <div className="flex justify-between mb-3">
-            <h3 className="font-semibold">
-              Confidence
-            </h3>
+            <h3 className="font-semibold">Confidence</h3>
 
             <span className="font-semibold text-primary">
-              {Math.round(confidence * 100)}%
+              {Math.round(safeConfidence * 100)}%
             </span>
           </div>
 
@@ -158,7 +151,7 @@ console.log("🔍 available risk levels:", Object.keys(riskConfig));
               className="h-full rounded-full bg-primary"
               initial={{ width: 0 }}
               animate={{
-                width: `${confidence * 100}%`,
+                width: `${safeConfidence * 100}%`,
               }}
               transition={{
                 duration: 0.8,
@@ -167,7 +160,6 @@ console.log("🔍 available risk levels:", Object.keys(riskConfig));
           </div>
         </div>
 
-        {/* Disclaimer */}
         <div className="rounded-xl border border-yellow-200 bg-yellow-50 p-4">
           <p className="text-sm text-yellow-800">
             This assessment is intended for informational purposes only and is
@@ -177,7 +169,6 @@ console.log("🔍 available risk levels:", Object.keys(riskConfig));
           </p>
         </div>
 
-        {/* Start Again */}
         <Button
           onClick={handleNewAssessment}
           className="w-full py-6 rounded-xl"

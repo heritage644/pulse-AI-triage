@@ -1,34 +1,68 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { flushSync } from "react-dom";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { useTriage } from "@/context/TriageContext";
+import type { RiskLevel } from "@/types/triage";
 
 const API_BASE = "https://ai-triage-api-4.onrender.com/api";
+const POLL_INTERVAL = 2000;
+const MAX_ATTEMPTS = 30;
+
+const VALID_RISK_LEVELS: RiskLevel[] = ["low", "moderate", "high", "emergency"];
+
+function normalizeRiskLevel(value: unknown): RiskLevel {
+  const lower = String(value ?? "").toLowerCase();
+  return (VALID_RISK_LEVELS as string[]).includes(lower)
+    ? (lower as RiskLevel)
+    : "low";
+}
 
 const LoadingAssessment = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { sessionId, setResult } = useTriage();
 
-  const [status, setStatus] = useState("Analyzing your responses...");
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [status, setStatus] = useState("AI is analyzing your symptoms...");
+
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const doneRef = useRef(false);
+  const attemptsRef = useRef(0);
 
   useEffect(() => {
     if (!sessionId) {
-      navigate("/");
+      navigate("/", { replace: true });
       return;
     }
 
-    let isMounted = true;
-    let attempts = 0;
-    const MAX_ATTEMPTS = 30;
+    let cancelled = false;
+    const controller = new AbortController();
+
+    doneRef.current = false;
+    attemptsRef.current = 0;
+
+    const scheduleNextPoll = () => {
+      if (cancelled || doneRef.current) return;
+
+      timeoutRef.current = setTimeout(() => {
+        void poll();
+      }, POLL_INTERVAL);
+    };
 
     const poll = async () => {
+      if (cancelled || doneRef.current) return;
+
       try {
         const res = await fetch(`${API_BASE}/triage/${sessionId}/result`, {
-          headers: { "Cache-Control": "no-cache" },
+          method: "GET",
+          signal: controller.signal,
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache",
+            Pragma: "no-cache",
+          },
         });
 
         if (!res.ok) {
@@ -36,71 +70,117 @@ const LoadingAssessment = () => {
         }
 
         const response = await res.json();
-        // Handle both wrapped and direct response formats
-        const payload = response.data ?? response;
+        const data = response?.data ?? response;
 
-        // Check for completion using multiple possible fields
-        const isReady = 
-          response.ready === true ||
-          payload.ready === true ||
-          payload.status === "COMPLETED" ||
-          response.status === "COMPLETED";
+        const ready = Boolean(data?.ready) || data?.status === "COMPLETED";
 
-        if (!isReady) {
-          attempts++;
-          if (attempts >= MAX_ATTEMPTS) {
+        if (!ready) {
+          attemptsRef.current += 1;
+
+          if (attemptsRef.current >= MAX_ATTEMPTS) {
             toast({
               title: "Assessment is taking longer than expected",
               description: "Please try again in a few moments.",
               variant: "destructive",
             });
-            navigate("/");
+
+            navigate("/", { replace: true });
             return;
           }
 
           setStatus("AI is analyzing your symptoms...");
-          timerRef.current = setTimeout(poll, 2000);
+          scheduleNextPoll();
           return;
         }
 
-        // Extract assessment from wherever it exists in the response
-        const assessment = 
-          response.assessment ??
-          payload.assessment ??
-          payload;
+        doneRef.current = true;
 
-        setResult({
-          riskLevel: (assessment.riskLevel || "low").toLowerCase(),
-          recommendation: Array.isArray(assessment.recommendations)
-            ? assessment.recommendations.join("\n")
-            : assessment.recommendations || assessment.explanation || "",
-          possibleConditions: assessment.possibleConditions ?? [],
-          confidence: Number(assessment.confidence) ?? 0.9,
+        const assessment = data?.assessment ?? {};
+
+        const recommendationRaw =
+          assessment.recommendation ??
+          assessment.recommendations ??
+          "";
+
+        const possibleConditionsRaw =
+          assessment.possibleConditions ??
+          assessment.possible_conditions ??
+          [];
+
+        const riskLevelRaw =
+          assessment.riskLevel ??
+          assessment.risk_level ??
+          data?.riskLevel ??
+          data?.risk_level ??
+          "low";
+
+        const confidenceRaw =
+          assessment.confidence ??
+          data?.confidence ??
+          0.9;
+
+        const confidenceNumber = Number(confidenceRaw);
+        const normalizedConfidence =
+          Number.isFinite(confidenceNumber)
+            ? confidenceNumber > 1
+              ? Math.min(confidenceNumber / 100, 1)
+              : Math.max(confidenceNumber, 0)
+            : 0.9;
+
+        flushSync(() => {
+          setResult({
+            riskLevel: normalizeRiskLevel(riskLevelRaw),
+            recommendation: Array.isArray(recommendationRaw)
+              ? recommendationRaw.join("\n")
+              : String(recommendationRaw || ""),
+            possibleConditions: Array.isArray(possibleConditionsRaw)
+              ? possibleConditionsRaw
+              : [],
+            confidence: normalizedConfidence,
+          });
         });
 
-        // Small delay ensures context update propagates before navigation
-        setTimeout(() => {
-          if (isMounted) navigate("/results");
-        }, 100);
-
+        navigate("/results", { replace: true });
       } catch (err) {
+        if (cancelled) return;
+
+        if (err instanceof DOMException && err.name === "AbortError") {
+          return;
+        }
+
         console.error("Polling error:", err);
-        if (!isMounted) return;
+
+        attemptsRef.current += 1;
+
+        if (attemptsRef.current < MAX_ATTEMPTS) {
+          setStatus("Still processing your assessment...");
+          scheduleNextPoll();
+          return;
+        }
 
         toast({
           title: "Something went wrong",
-          description: err instanceof Error ? err.message : "Unable to retrieve assessment.",
+          description:
+            err instanceof Error
+              ? err.message
+              : "Unable to retrieve assessment.",
           variant: "destructive",
         });
-        navigate("/");
+
+        navigate("/", { replace: true });
       }
     };
 
-    poll();
+    void poll();
 
     return () => {
-      isMounted = false;
-      if (timerRef.current) clearTimeout(timerRef.current);
+      cancelled = true;
+      doneRef.current = true;
+      controller.abort();
+
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
     };
   }, [sessionId, setResult, navigate, toast]);
 
@@ -128,7 +208,7 @@ const LoadingAssessment = () => {
         </h1>
 
         <p className="text-muted-foreground mb-8">
-          We're reviewing your responses and preparing your personalized
+          We&apos;re reviewing your responses and preparing your personalized
           assessment.
         </p>
 
