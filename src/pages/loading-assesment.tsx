@@ -1,163 +1,201 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import ProgressBar from "@/components/ProgressBar";
 import { useTriage } from "@/context/TriageContext";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  AlertCircle,
+  ShieldAlert,
+  RotateCcw,
+} from "lucide-react";
+import type { RiskLevel } from "@/types/triage";
 
-const API_BASE = "https://ai-triage-api-4.onrender.com/api";
+const riskConfig: Record<
+  RiskLevel,
+  {
+    label: string;
+    colorClass: string;
+    bgClass: string;
+    icon: typeof CheckCircle2;
+  }
+> = {
+  low: {
+    label: "Low Risk",
+    colorClass: "text-risk-low",
+    bgClass: "bg-risk-low/10",
+    icon: CheckCircle2,
+  },
+  moderate: {
+    label: "Moderate Risk",
+    colorClass: "text-risk-moderate",
+    bgClass: "bg-risk-moderate/10",
+    icon: AlertCircle,
+  },
+  high: {
+    label: "High Risk",
+    colorClass: "text-risk-high",
+    bgClass: "bg-risk-high/10",
+    icon: AlertTriangle,
+  },
+  emergency: {
+    label: "Emergency",
+    colorClass: "text-risk-emergency",
+    bgClass: "bg-risk-emergency/10",
+    icon: ShieldAlert,
+  },
+};
 
-const LoadingAssessment = () => {
+const Results = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { sessionId, setResult } = useTriage();
+  const ctx = useTriage();
 
-  const [status, setStatus] = useState("Analyzing your responses...");
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-
+  // Safely handle navigation via useEffect instead of raw render execution
   useEffect(() => {
-    if (!sessionId) {
-      navigate("/");
-      return;
+    if (!ctx.sessionId || !ctx.result) {
+      navigate("/", { replace: true });
     }
+  }, [ctx.sessionId, ctx.result, navigate]);
 
-    let isMounted = true;
-    let attempts = 0;
-    // 24 attempts * 5000ms = 120 seconds total polling window
-    const MAX_ATTEMPTS = 24;
-    const POLL_INTERVAL_MS = 5000;
+  if (!ctx.sessionId || !ctx.result) {
+    return null;
+  }
 
-    const poll = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/triage/${sessionId}/result`, {
-          headers: { "Cache-Control": "no-cache" },
-        });
+  const {
+    riskLevel,
+    recommendation,
+    possibleConditions,
+    confidence,
+  } = ctx.result;
 
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
+  // Normalize string to lower-case to match riskConfig keys
+  const normalizedLevel = (riskLevel?.toLowerCase() || "low") as RiskLevel;
+  const config = riskConfig[normalizedLevel] || riskConfig.low;
+  const Icon = config.icon;
 
-        const response = await res.json();
-        const data = response.data ?? response;
-
-        if (!isMounted) return;
-
-        if (!data?.ready) {
-          attempts++;
-
-          if (attempts >= MAX_ATTEMPTS) {
-            toast({
-              title: "Assessment is taking longer than expected",
-              description: "Please try again in a few moments.",
-              variant: "destructive",
-            });
-            navigate("/");
-            return;
-          }
-
-          setStatus("AI is analyzing your symptoms...");
-          timerRef.current = setTimeout(poll, POLL_INTERVAL_MS);
-          return;
-        }
-
-        // Assessment is ready
-        const assessment = data.assessment || {};
-
-        setResult({
-          riskLevel: (assessment.riskLevel || "low").toLowerCase(),
-          recommendation: Array.isArray(assessment.recommendations)
-            ? assessment.recommendations.join("\n")
-            : assessment.recommendations || "",
-          possibleConditions: assessment.possibleConditions ?? [],
-          confidence: assessment.confidence ?? 0.9,
-        });
-
-        timerRef.current = setTimeout(() => {
-          if (isMounted) navigate("/results");
-        }, 100);
-      } catch (err) {
-        console.warn("Polling attempt encountered an error:", err);
-
-        if (!isMounted) return;
-
-        attempts++;
-
-        // Retry on network/rate-limit error unless max attempts are reached
-        if (attempts < MAX_ATTEMPTS) {
-          timerRef.current = setTimeout(poll, POLL_INTERVAL_MS);
-        } else {
-          toast({
-            title: "Something went wrong",
-            description:
-              err instanceof Error
-                ? err.message
-                : "Unable to retrieve assessment.",
-            variant: "destructive",
-          });
-          navigate("/");
-        }
-      }
-    };
-
-    poll();
-
-    return () => {
-      isMounted = false;
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, [sessionId, setResult, navigate, toast]);
+  const handleNewAssessment = () => {
+    ctx.reset();
+    navigate("/");
+  };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center px-6">
+    <div className="min-h-screen bg-slate-100 px-4 py-8 max-w-xl mx-auto">
+      <ProgressBar
+        current={2}
+        total={3}
+        labels={["Symptoms", "Questions", "Results"]}
+      />
+
       <motion.div
-        initial={{ opacity: 0, y: 15 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-2xl shadow-lg p-10 w-full max-w-md text-center"
+        className="space-y-6 mt-6"
       >
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{
-            repeat: Infinity,
-            duration: 1.2,
-            ease: "linear",
-          }}
-          className="flex justify-center mb-6"
+        {/* Risk Level */}
+        <div
+          className={`flex items-center gap-4 rounded-xl p-5 ${config.bgClass}`}
         >
-          <Loader2 className="h-16 w-16 text-blue-600" />
-        </motion.div>
+          <Icon className={`h-8 w-8 ${config.colorClass}`} />
 
-        <h1 className="text-2xl font-bold mb-3">
-          Preparing Your Assessment
-        </h1>
+          <div>
+            <h2 className={`text-xl font-bold ${config.colorClass}`}>
+              {config.label}
+            </h2>
 
-        <p className="text-muted-foreground mb-8">
-          We're reviewing your responses and preparing your personalized
-          assessment.
-        </p>
-
-        <div className="space-y-4 text-left">
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-5 h-5 text-green-600" />
-            <span>Symptoms submitted</span>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-5 h-5 text-green-600" />
-            <span>Follow-up answers received</span>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
-            <span>{status}</span>
+            <p className="text-sm text-muted-foreground">
+              Assessment completed successfully
+            </p>
           </div>
         </div>
 
-        <p className="mt-8 text-sm text-muted-foreground">
-          This usually takes between <strong>30 and 60 seconds</strong>.
-        </p>
+        {/* Recommendation */}
+        <div className="rounded-xl border bg-card p-5">
+          <h3 className="font-semibold text-lg mb-3">
+            Recommendation
+          </h3>
+
+          <p className="leading-relaxed whitespace-pre-line">
+            {recommendation}
+          </p>
+        </div>
+
+        {/* Possible Conditions */}
+        {possibleConditions.length > 0 && (
+          <div className="rounded-xl border bg-card p-5">
+            <h3 className="font-semibold text-lg mb-3">
+              Possible Conditions
+            </h3>
+
+            <ul className="space-y-2">
+              {possibleConditions.map((condition, index) => (
+                <li
+                  key={index}
+                  className="flex gap-2 items-start"
+                >
+                  <span className="mt-2 h-2 w-2 rounded-full bg-primary shrink-0" />
+
+                  <span>{condition}</span>
+                </li>
+              ))}
+            </ul>
+
+            <p className="text-xs italic text-muted-foreground mt-4">
+              These are possible conditions only and are not a medical
+              diagnosis.
+            </p>
+          </div>
+        )}
+
+        {/* Confidence */}
+        <div className="rounded-xl border bg-card p-5">
+          <div className="flex justify-between mb-3">
+            <h3 className="font-semibold">
+              Confidence
+            </h3>
+
+            <span className="font-semibold text-primary">
+              {Math.round(confidence * 100)}%
+            </span>
+          </div>
+
+          <div className="h-3 rounded-full bg-muted overflow-hidden">
+            <motion.div
+              className="h-full rounded-full bg-primary"
+              initial={{ width: 0 }}
+              animate={{
+                width: `${confidence * 100}%`,
+              }}
+              transition={{
+                duration: 0.8,
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Disclaimer */}
+        <div className="rounded-xl border border-yellow-200 bg-yellow-50 p-4">
+          <p className="text-sm text-yellow-800">
+            This assessment is intended for informational purposes only and is
+            not a substitute for professional medical advice, diagnosis, or
+            treatment. If your symptoms worsen or you believe you are
+            experiencing a medical emergency, seek immediate medical attention.
+          </p>
+        </div>
+
+        {/* Start Again */}
+        <Button
+          onClick={handleNewAssessment}
+          className="w-full py-6 rounded-xl"
+          size="lg"
+        >
+          <RotateCcw className="mr-2 h-4 w-4" />
+          Start New Assessment
+        </Button>
       </motion.div>
     </div>
   );
 };
 
-export default LoadingAssessment;
+export default Results;
