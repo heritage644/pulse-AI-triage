@@ -23,7 +23,9 @@ const LoadingAssessment = () => {
 
     let isMounted = true;
     let attempts = 0;
-    const MAX_ATTEMPTS = 30; // Increased threshold for hosted backend latency
+    // 24 attempts * 5000ms = 120 seconds total polling window
+    const MAX_ATTEMPTS = 24;
+    const POLL_INTERVAL_MS = 5000;
 
     const poll = async () => {
       try {
@@ -32,11 +34,10 @@ const LoadingAssessment = () => {
         });
 
         if (!res.ok) {
-          throw new Error("Unable to retrieve assessment.");
+          throw new Error(`HTTP error! status: ${res.status}`);
         }
 
         const response = await res.json();
-        // Handle both wrapper formats if envelope structure varies
         const data = response.data ?? response;
 
         if (!isMounted) return;
@@ -55,13 +56,13 @@ const LoadingAssessment = () => {
           }
 
           setStatus("AI is analyzing your symptoms...");
-          timerRef.current = setTimeout(poll, 2000);
+          timerRef.current = setTimeout(poll, POLL_INTERVAL_MS);
           return;
         }
 
-        // Assessment is ready — extract structure securely
+        // Assessment is ready
         const assessment = data.assessment || {};
-        
+
         setResult({
           riskLevel: (assessment.riskLevel || "low").toLowerCase(),
           recommendation: Array.isArray(assessment.recommendations)
@@ -71,26 +72,30 @@ const LoadingAssessment = () => {
           confidence: assessment.confidence ?? 0.9,
         });
 
-        // Small timeout ensures Context dispatch propagates before route change
-        setTimeout(() => {
+        timerRef.current = setTimeout(() => {
           if (isMounted) navigate("/results");
         }, 100);
-
       } catch (err) {
-        console.error("Polling error:", err);
+        console.warn("Polling attempt encountered an error:", err);
 
         if (!isMounted) return;
 
-        toast({
-          title: "Something went wrong",
-          description:
-            err instanceof Error
-              ? err.message
-              : "Unable to retrieve assessment.",
-          variant: "destructive",
-        });
+        attempts++;
 
-        navigate("/");
+        // Retry on network/rate-limit error unless max attempts are reached
+        if (attempts < MAX_ATTEMPTS) {
+          timerRef.current = setTimeout(poll, POLL_INTERVAL_MS);
+        } else {
+          toast({
+            title: "Something went wrong",
+            description:
+              err instanceof Error
+                ? err.message
+                : "Unable to retrieve assessment.",
+            variant: "destructive",
+          });
+          navigate("/");
+        }
       }
     };
 
@@ -148,7 +153,7 @@ const LoadingAssessment = () => {
         </div>
 
         <p className="mt-8 text-sm text-muted-foreground">
-          This usually takes between <strong>5 and 15 seconds</strong>.
+          This usually takes between <strong>30 and 60 seconds</strong>.
         </p>
       </motion.div>
     </div>
